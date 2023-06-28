@@ -114,11 +114,6 @@ async function fetchData() {
         return [];
     }
 }
-async function convertData() {
-    await fetchData();
-    randomCountry(globalData);
-}
-convertData();
 function randomCountry(data) {
     let random = [];
     for (let i = 0; i < data.length; i++) {
@@ -127,6 +122,11 @@ function randomCountry(data) {
     }
 }
 fetchData();
+async function convertData() {
+    await fetchData();
+    randomCountry(globalData);
+}
+convertData();
 function addCountry(country) {
     countryContainer.innerHTML += `<div class="bg-header shadow-[0_0_5px_-4px] shadow-filter mb-5 rounded-md overflow-hidden hover:scale-110 duration-300 cursor-pointer id="countryDiv"">
   <img

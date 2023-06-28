@@ -36,6 +36,7 @@ interface country {
   languages?: lanAndCurr[];
   alpha2Code?: string;
   alpha3Code?: string;
+  length?: number;
 }
 interface lanAndCurr {
   name: string;
@@ -139,11 +140,6 @@ async function fetchData(): Promise<country[]> {
     return [];
   }
 }
-async function convertData() {
-  await fetchData();
-  randomCountry(globalData);
-}
-convertData();
 
 function randomCountry(data: country[]) {
   let random: any = [];
@@ -153,6 +149,11 @@ function randomCountry(data: country[]) {
   }
 }
 fetchData();
+async function convertData() {
+  await fetchData();
+  randomCountry(globalData);
+}
+convertData();
 
 function addCountry(country: country) {
   countryContainer.innerHTML += `<div class="bg-header shadow-[0_0_5px_-4px] shadow-filter mb-5 rounded-md overflow-hidden hover:scale-110 duration-300 cursor-pointer id="countryDiv"">
