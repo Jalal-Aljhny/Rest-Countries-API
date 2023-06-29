@@ -104,7 +104,7 @@ myInput.onblur = function () {
 };
 async function fetchData() {
     try {
-        const response = await fetch("../../data.json");
+        const response = await fetch("https://restcountries.com/v3.1/all");
         const data = await response.json();
         globalData = data;
         return data;
@@ -131,12 +131,12 @@ function addCountry(country) {
     countryContainer.innerHTML += `<div class="bg-header shadow-[0_0_5px_-4px] shadow-filter mb-5 rounded-md overflow-hidden hover:scale-110 duration-300 cursor-pointer id="countryDiv"">
   <img
   class="h-40 max-h-40 object-cover w-full"
-    src=${country.flag}
+    src=${country.flags.svg}
     alt="flag"
     loading="lazy"
   />
   <div class="p-5 pb-8">
-    <h3 class="font-extrabold my-3 text-text">${country.name}</h3>
+    <h3 class="font-extrabold my-3 text-text">${country.name.common}</h3>
     <p class="font-semibold inline-block text-sm text-text">Population :</p>
     <span class="font-normal inline-block text-xs text-text">${country.population}</span>
     <br />
@@ -161,7 +161,13 @@ document.forms[0].addEventListener("submit", (e) => e.preventDefault());
 async function search(name) {
     if (myInput.value.trim() !== "") {
         await fetchData();
-        let result = globalData.filter((country) => country.name.toLowerCase().includes(name.toLowerCase()));
+        let result = globalData.filter((country) => {
+            var _a;
+            return country.name.common.toLowerCase().includes(name.toLowerCase()) ||
+                country.name.official.toLowerCase().includes(name.toLowerCase()) ||
+                (country.name.nativeName &&
+                    ((_a = country.name.nativeName[Object.keys(country.name.nativeName)[0]]) === null || _a === void 0 ? void 0 : _a.common.toLowerCase().includes(name.toLowerCase())));
+        });
         countryContainer.innerHTML = "";
         result.forEach((country) => {
             addCountry(country);
@@ -188,9 +194,10 @@ function detail() {
     });
 }
 async function openDetail() {
+    var _a, _b, _c, _d, _e, _f, _g;
     let n = this.querySelector("h3").textContent.toLowerCase();
     await fetchData();
-    let current = globalData.filter((country) => country.name.toLowerCase() == n)[0];
+    let current = globalData.filter((country) => country.name.common.toLowerCase() == n)[0];
     document.querySelector("main").classList.add("hidden");
     detailSection.classList.remove("hidden");
     detailSection.innerHTML = "";
@@ -201,16 +208,16 @@ async function openDetail() {
   &#8592; &nbsp;&nbsp;Back
 </button>
 <div class="flex justify-between items-center flex-col   g:flex-row">
-  <img src="${current.flag}" alt="flag" class="w-full g:w-5/12"/>
+  <img src="${current.flags.svg}" alt="flag" class="w-full g:w-5/12"/>
   <div class = "w-full g:w-5/12">
-  <h3 class="font-extrabold my-3 text-text w-full text-2xl  ">${current.name}</h3>
+  <h3 class="font-extrabold my-3 text-text w-full text-2xl  ">${current.name.common}</h3>
     <div class = "flex justify-between items-start mt-5 flex-col g:flex-row">
       <div>
         <p class="font-semibold inline-block text-base  text-text mt-3">
           Native Name :
         </p>
         <span class="font-normal inline-block text-xs text-text"
-          >${current.nativeName}</span
+          >${(_f = (_c = (_b = (_a = current.name.nativeName) === null || _a === void 0 ? void 0 : _a.ara) === null || _b === void 0 ? void 0 : _b.common) !== null && _c !== void 0 ? _c : (_e = (_d = current.name.nativeName) === null || _d === void 0 ? void 0 : _d.eng) === null || _e === void 0 ? void 0 : _e.common) !== null && _f !== void 0 ? _f : (_g = current.name.nativeName[Object.keys(current.name.nativeName)[0]]) === null || _g === void 0 ? void 0 : _g.common}</span
         >
         <br />
         <p class="font-semibold inline-block text-base text-text mt-3">
@@ -246,7 +253,7 @@ async function openDetail() {
         Top Level Domain:
       </p>
       <span class="font-normal inline-block text-xs text-text"
-        >${current.topLevelDomain}</span
+        >${current.tld}</span
       >
       <br/>
       <p class="font-semibold inline-block text-base text-text mt-3">Currencies:</p>
@@ -274,30 +281,42 @@ function getBack() {
         detailSection.classList.add("hidden");
     }, 300);
 }
-function getLanguges(languagesArray) {
-    if (languagesArray.length == 1) {
-        return languagesArray[0].name;
+function topLevelDomain(tld) {
+    if (tld.length == 1) {
+        return tld[0];
     }
     else {
         let result = "";
-        for (let i = 1; i <= languagesArray.length; i++) {
-            result += `${i == languagesArray.length
-                ? languagesArray[i - 1].name
-                : `${languagesArray[i - 1].name},`}`;
+        for (let i = 1; i <= tld.length; i++) {
+            result += `${i == tld.length ? tld[i - 1] : ` ${tld[i - 1]} , `}`;
+        }
+        return result;
+    }
+}
+function getLanguges(languagesArray) {
+    if (Object.keys(languagesArray).length == 1) {
+        return Object.keys(languagesArray)[0];
+    }
+    else {
+        let result = "";
+        for (let i = 1; i <= Object.keys(languagesArray).length; i++) {
+            result += `${i == Object.keys(languagesArray).length
+                ? Object.keys(languagesArray)[i - 1]
+                : ` ${Object.keys(languagesArray)[i - 1]} , `}`;
         }
         return result;
     }
 }
 function getCurrencies(currenciesArray) {
-    if (currenciesArray.length == 1) {
-        return currenciesArray[0].name;
+    if (Object.keys(currenciesArray).length == 1) {
+        return Object.keys(currenciesArray)[0];
     }
     else {
         let result = "";
-        for (let i = 1; i <= currenciesArray.length; i++) {
-            result += `${i == currenciesArray.length
-                ? currenciesArray[i - 1].name
-                : `${currenciesArray[i - 1].name},`}`;
+        for (let i = 1; i <= Object.keys(currenciesArray).length; i++) {
+            result += `${i == Object.keys(currenciesArray).length
+                ? Object.keys(currenciesArray)[i - 1]
+                : ` ${Object.keys(currenciesArray)[i - 1]} , `}`;
         }
         return result;
     }
@@ -309,9 +328,10 @@ async function getBorders(borders, center) {
     }
     else {
         await fetchData();
-        let bordersC = globalData.filter((country) => borders.includes(country.alpha2Code) ||
-            borders.includes(country.alpha3Code));
-        let cB = bordersC.map((b) => b.name);
+        let bordersC = globalData.filter((country) => borders.includes(country.cca3) || borders.includes(country.cioc));
+        console.log(bordersC);
+        let cB = bordersC.map((b) => b.name.common);
+        console.log(cB);
         center.innerHTML = "";
         cB.forEach((c) => {
             center.innerHTML += `<span class="font-normal inline-block text-xs text-text py-3 px-5 mx-1 mt-5 rounded shadow-[0_0_10px_2px] shadow-shaddow">${c}</span> `;

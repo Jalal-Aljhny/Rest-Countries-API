@@ -23,24 +23,42 @@ let countryContainer = document.querySelector(
 let globalData: country[];
 let detailSection = document.querySelector("main + section")!;
 interface country {
-  flag: string;
-  name: string;
+  flags: flag;
+  name: name;
   population: number;
   region: string;
   capital: string;
   nativeName?: string;
   subregion?: string;
   borders?: string[];
-  topLevelDomain?: string[];
+  tld?: string[];
   currencies?: lanAndCurr[];
   languages?: lanAndCurr[];
-  alpha2Code?: string;
-  alpha3Code?: string;
+  cca3?: string;
+  cioc?: string;
   length?: number;
 }
 interface lanAndCurr {
   name: string;
   [key: string]: string | { param1: number[]; param2: string; param3: string };
+}
+interface flag {
+  svg: string;
+  alt: string;
+  png: string;
+}
+interface name {
+  common: string;
+  official: string;
+  nativeName: nativeName;
+}
+interface nativeName {
+  ara: ara;
+  eng: ara;
+  [key: string]: ara;
+}
+interface ara {
+  common: string;
 }
 
 if (window.localStorage.getItem("theme") != null) {
@@ -131,7 +149,7 @@ myInput.onblur = function (): void {
 
 async function fetchData(): Promise<country[]> {
   try {
-    const response = await fetch("../../data.json");
+    const response = await fetch("https://restcountries.com/v3.1/all");
     const data = await response.json();
     globalData = data;
     return data;
@@ -159,12 +177,12 @@ function addCountry(country: country) {
   countryContainer.innerHTML += `<div class="bg-header shadow-[0_0_5px_-4px] shadow-filter mb-5 rounded-md overflow-hidden hover:scale-110 duration-300 cursor-pointer id="countryDiv"">
   <img
   class="h-40 max-h-40 object-cover w-full"
-    src=${country.flag}
+    src=${country.flags.svg}
     alt="flag"
     loading="lazy"
   />
   <div class="p-5 pb-8">
-    <h3 class="font-extrabold my-3 text-text">${country.name}</h3>
+    <h3 class="font-extrabold my-3 text-text">${country.name.common}</h3>
     <p class="font-semibold inline-block text-sm text-text">Population :</p>
     <span class="font-normal inline-block text-xs text-text">${country.population}</span>
     <br />
@@ -189,8 +207,16 @@ document.forms[0].addEventListener("submit", (e) => e.preventDefault());
 async function search(name: string): Promise<void> {
   if (myInput.value.trim() !== "") {
     await fetchData();
-    let result = globalData.filter((country) =>
-      country.name.toLowerCase().includes(name.toLowerCase())
+    let result = globalData.filter(
+      (country: country) =>
+        country.name.common.toLowerCase().includes(name.toLowerCase()) ||
+        country.name.official.toLowerCase().includes(name.toLowerCase()) ||
+        (country.name.nativeName &&
+          country.name.nativeName[
+            Object.keys(country.name.nativeName)[0]
+          ]?.common
+            .toLowerCase()
+            .includes(name.toLowerCase()))
     );
     countryContainer.innerHTML = "";
     result.forEach((country) => {
@@ -225,7 +251,7 @@ async function openDetail(this: any): Promise<void> {
   let n: string = this.querySelector("h3").textContent.toLowerCase();
   await fetchData();
   let current: country = globalData.filter(
-    (country) => country.name.toLowerCase() == n
+    (country) => country.name.common.toLowerCase() == n
   )[0];
   document.querySelector("main")!.classList.add("hidden");
   detailSection.classList.remove("hidden");
@@ -237,10 +263,10 @@ async function openDetail(this: any): Promise<void> {
   &#8592; &nbsp;&nbsp;Back
 </button>
 <div class="flex justify-between items-center flex-col   g:flex-row">
-  <img src="${current.flag}" alt="flag" class="w-full g:w-5/12"/>
+  <img src="${current.flags.svg}" alt="flag" class="w-full g:w-5/12"/>
   <div class = "w-full g:w-5/12">
   <h3 class="font-extrabold my-3 text-text w-full text-2xl  ">${
-    current.name
+    current.name.common
   }</h3>
     <div class = "flex justify-between items-start mt-5 flex-col g:flex-row">
       <div>
@@ -248,7 +274,12 @@ async function openDetail(this: any): Promise<void> {
           Native Name :
         </p>
         <span class="font-normal inline-block text-xs text-text"
-          >${current.nativeName}</span
+          >${
+            current.name.nativeName?.ara?.common ??
+            current.name.nativeName?.eng?.common ??
+            current.name.nativeName[Object.keys(current.name.nativeName)[0]]
+              ?.common
+          }</span
         >
         <br />
         <p class="font-semibold inline-block text-base text-text mt-3">
@@ -284,7 +315,7 @@ async function openDetail(this: any): Promise<void> {
         Top Level Domain:
       </p>
       <span class="font-normal inline-block text-xs text-text"
-        >${current.topLevelDomain}</span
+        >${current.tld}</span
       >
       <br/>
       <p class="font-semibold inline-block text-base text-text mt-3">Currencies:</p>
@@ -315,31 +346,42 @@ function getBack(): void {
     detailSection.classList.add("hidden");
   }, 300);
 }
-function getLanguges(languagesArray: lanAndCurr[]) {
-  if (languagesArray.length == 1) {
-    return languagesArray[0].name;
+function topLevelDomain(tld: string[]) {
+  if (tld.length == 1) {
+    return tld[0];
   } else {
     let result = "";
-    for (let i = 1; i <= languagesArray.length; i++) {
+    for (let i = 1; i <= tld.length; i++) {
+      result += `${i == tld.length ? tld[i - 1] : ` ${tld[i - 1]} , `}`;
+    }
+    return result;
+  }
+}
+function getLanguges(languagesArray: lanAndCurr[]) {
+  if (Object.keys(languagesArray).length == 1) {
+    return Object.keys(languagesArray)[0];
+  } else {
+    let result = "";
+    for (let i = 1; i <= Object.keys(languagesArray).length; i++) {
       result += `${
-        i == languagesArray.length
-          ? languagesArray[i - 1].name
-          : `${languagesArray[i - 1].name},`
+        i == Object.keys(languagesArray).length
+          ? Object.keys(languagesArray)[i - 1]
+          : ` ${Object.keys(languagesArray)[i - 1]} , `
       }`;
     }
     return result;
   }
 }
 function getCurrencies(currenciesArray: lanAndCurr[]) {
-  if (currenciesArray.length == 1) {
-    return currenciesArray[0].name;
+  if (Object.keys(currenciesArray).length == 1) {
+    return Object.keys(currenciesArray)[0];
   } else {
     let result = "";
-    for (let i = 1; i <= currenciesArray.length; i++) {
+    for (let i = 1; i <= Object.keys(currenciesArray).length; i++) {
       result += `${
-        i == currenciesArray.length
-          ? currenciesArray[i - 1].name
-          : `${currenciesArray[i - 1].name},`
+        i == Object.keys(currenciesArray).length
+          ? Object.keys(currenciesArray)[i - 1]
+          : ` ${Object.keys(currenciesArray)[i - 1]} , `
       }`;
     }
     return result;
@@ -356,10 +398,11 @@ async function getBorders(
     await fetchData();
     let bordersC = globalData.filter(
       (country: country) =>
-        borders.includes(country.alpha2Code!) ||
-        borders.includes(country.alpha3Code!)
+        borders.includes(country.cca3!) || borders.includes(country.cioc!)
     );
-    let cB = bordersC.map((b) => b.name);
+    console.log(bordersC);
+    let cB = bordersC.map((b) => b.name.common);
+    console.log(cB);
     center.innerHTML = "";
     cB.forEach((c) => {
       center.innerHTML += `<span class="font-normal inline-block text-xs text-text py-3 px-5 mx-1 mt-5 rounded shadow-[0_0_10px_2px] shadow-shaddow">${c}</span> `;
