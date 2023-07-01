@@ -182,7 +182,7 @@ function addCountry(country: country) {
     loading="lazy"
   />
   <div class="p-5 pb-8">
-    <h3 class="font-extrabold my-3 text-text">${country.name.common}</h3>
+    <h3 class="font-extrabold my-3 text-text text-x1 ">${country.name.common}</h3>
     <p class="font-semibold inline-block text-sm text-text">Population :</p>
     <span class="font-normal inline-block text-xs text-text">${country.population}</span>
     <br />
@@ -265,9 +265,9 @@ async function openDetail(this: any): Promise<void> {
 <div class="flex justify-between items-center flex-col   g:flex-row">
   <img src="${current.flags.svg}" alt="flag" class="w-full g:w-5/12"/>
   <div class = "w-full g:w-5/12">
-  <h3 class="font-extrabold my-3 text-text w-full text-2xl  ">${
+  <h2 class="font-extrabold my-3 text-text w-full text-2xl  ">${
     current.name.common
-  }</h3>
+  }</h2>
     <div class = "flex justify-between items-start mt-5 flex-col g:flex-row">
       <div>
         <p class="font-semibold inline-block text-base  text-text mt-3">
