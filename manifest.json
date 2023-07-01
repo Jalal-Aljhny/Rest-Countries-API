@@ -11,17 +11,17 @@
     {
       "src": "dist/images/chevron-down-dark.svg",
       "type": "image/svg",
-      "sizes": "20x20"
+      "sizes": "16x16"
     },
     {
-      "src": "dist/images/moon-regilar-dark.svg",
+      "src": "dist/images/moon-regular-dark.svg",
       "type": "image/svg",
       "sizes": "12x19.2"
     },
     {
       "src": "dist/images/search-dark.svg",
       "type": "image/svg",
-      "sizes": "20x20"
+      "sizes": "150x150"
     }
   ],
   "start_url": "/",
